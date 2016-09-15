@@ -1,8 +1,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
-main() {
-	execl("/bin/ls", "ls", NULL);
+int main() {
+	execl("/binasf/ls", "lds", NULL);
 	printf("What happened?\n");
 }
 
