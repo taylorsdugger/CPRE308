@@ -2,10 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include "Bank.c"
 #include "Bank.h"
 
-#define bufferSize 64
-#define delim " \t\r\n\a"
 /*****************************************************************/
 int appserver(char **args);
 int check(char **args);
@@ -15,7 +14,9 @@ void *worker();
 
 /*****************************************************************/
 int reqID = 0;
-int numReq = 0;
+int balReq = 0;
+int tranReq = 0;
+
 pthread_mutex_t mut;
 pthread_cond_t  check_cv;
 pthread_cond_t  trans_cv;
@@ -27,12 +28,13 @@ struct account{
     int ID;
 };
 
-struct request{
-    int value;
-
+struct balCheck{
+    int AccID;
+    int bal;
 };
 
-struct account accounts[0];
+struct account accounts[];
+struct balCheck bals[];
 
 /*****************************************************************/
 char *inputs[] = {
@@ -57,9 +59,10 @@ int numOfFunctions(){
 //
 int appserver(char **args){
 
-    int numThreads = args[0];
-    int numAccounts = args[1];
-    char *outFile = args[2];
+    printf("%c,  %d", args[0], args[1]);
+    int numThreads = args[1];
+    int numAccounts = args[2];
+    char *outFile = args[3];
 
     int thread_index[numThreads];
 
@@ -90,13 +93,21 @@ int appserver(char **args){
 //Worker threads
 void *worker(){
 
-    pthread_mutux_lock(&mut);
-    while(numReq == 0)
+    pthread_mutex_lock(&mut);
+
+    while(balReq == 0)
         pthread_cond_wait(&check_cv, &mut);
 
+        do{
+            pthread_mutex_lock(&(accounts[bals[reqID].AccID]).lock);
+            int val = read_account(bals[reqID].AccID);
 
+            balReq--;
+        }while(balReq > 0);
 
+        do{
 
+        }while(tranReq > 0);
 
 
     //numReq--;
@@ -108,44 +119,75 @@ int check(char **args){
     int i = 0;
 
     if(args[1] < 0){
-        //throw
+        exit(1);
     }else{
-        i = args[1];
+        i=args[1];
     }
 
     pthread_mutex_lock(&mut);
     //pthread_mutex_lock(&(accounts[i].lock));
 
     reqID++;
+    balReq++;
+
+    bals[reqID].AccID = i;
 
     pthread_cond_broadcast(&check_cv);
 
-    //struct account x = accounts[i];
+    printf("ID %d", reqID);
 
-    //printf(reqID + " BAL " + x.bal);
+    pthread_mutex_unlock(&mut);
 
     return 1;
 }
 
 int trans(char **args){
 
+
     return 1;
 }
 
 int end(char **args){
 
+    pthread_mutex_lock(&mut);
+
+    while(balReq > 0 || tranReq>0)
+        pthread_cond_wait(&end_cv, &mut);
+
+    pthread_mutex_unlock(&mut);
+
+    exit(EXIT_SUCCESS);
+
     return 1;
 }
 
 //ReadLine function
-char **readLine(void){
+char *readLine(void){
     char *line = NULL;
-    ssize_t size = 0;
+    size_t size;
     getline(&line, &size, stdin);
     return line;
 }
 
 char **split(char *in){
+    char *word = strtok(in, " ");
+    char *result[12];
+    int i =0;
+
+    while(word != NULL){
+        result[i++]=  word;
+        word= strtok(NULL, " ");
+    }
+
+    return result;
+    /*for(int i = 0; i < (nspace+1); i++){
+
+    }*/
+
+    //printf("%c, %c, %c\n", word[0], word[1], word[2]);
+    //return word;
+
+    /*printf("%c\n", in);
     int size = bufferSize;
     int pos = 0;
     char **list = malloc(bufferSize * sizeof(char*));
@@ -174,14 +216,41 @@ char **split(char *in){
 
         token = strtok(NULL, delim);
     }
-    list[pos] = NULL;
-    return list;
+    //list[pos] = NULL;
+    printf(list);
+    return list;*/
+}
+
+//this is the starting function for each command
+int start(char **args){
+    pid_t pid, ppid;
+    int status;
+
+    pid = fork();//it creates a child process
+    if (pid == 0) {
+        if (execvp(args[0], args) == -1) {
+            perror("error");
+        }
+        exit(EXIT_FAILURE);
+
+    } else if (pid < 0) {
+        perror("error");
+
+    } else {
+        do {
+            ppid = waitpid(pid, &status, WUNTRACED);//the parent will wait for child
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+
+    return 1;
 }
 
 int execute(char **args){
-    if(args[0] == NULL){return 1;}
+    //if(args[0] == NULL){return 1;}
 
-    for(int i = 0; i<numOfFunctions(); i++){
+    for(int i = 0; i<4; i++){
+        printf(strcmp(args[0], inputs[0]));
+
         if(strcmp(args[0], inputs[i]) == 0) return (*functions[i])(args);
     }
 
@@ -189,15 +258,19 @@ int execute(char **args){
 }
 
 void run(void){
-    char *next;
-    char **args;
+    char *next[100];
+    char **donut;
     int s;
 
     do{
-        printf("project2");
+        printf("project2: ");
         next = readLine();
-        args = split(next);
-        s = execute(args);
+        //donut = split(next);
+        //donut = strsep(&next, " ");
+        //s = execute(&donut);
+
+        free(next);
+        free(donut);
 
     }while(s);
 
