@@ -318,7 +318,7 @@ int PRAlgo_OPT(const PageFrame * PageFrames, int num_frames, const int * PageAcc
     for (int i = 0; i < num_frames; i++) {
         // Current access
         j = current_access;
-        // The id we're checking
+        // The id
         id = PageFrames[i].page_id;
         access = PageAccesses[j];
 
@@ -338,6 +338,9 @@ int PRAlgo_OPT(const PageFrame * PageFrames, int num_frames, const int * PageAcc
 
 }
 
+/*
+ *
+ */
 int PRAlgo_CUST(const PageFrame * PageFrames, int num_frames, const int * PageAccesses, int num_accesses, int current_access) {
     int futureAccess = current_access;
     int index = 0;
@@ -348,7 +351,7 @@ int PRAlgo_CUST(const PageFrame * PageFrames, int num_frames, const int * PageAc
     for (int i = 0; i < num_frames; i++) {
         // Current access
         j = current_access;
-        // The id we're checking
+        // The id
         id = PageFrames[i].page_id;
         access = PageAccesses[j];
 
