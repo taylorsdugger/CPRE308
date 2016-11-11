@@ -64,8 +64,7 @@ int main(int argc, char * argv[])
   for (i = 0; i < TOTAL_CONSUMER_THREADS; i++)
   {
     thread_index[i] = i;
-    pthread_create(&cons_tid[i], NULL, 
-		   consumer, (void *)&thread_index[i]);
+    pthread_create(&cons_tid[i], NULL, consumer, (void *)&thread_index[i]);
   }
 
   /* join all threads */

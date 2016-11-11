@@ -50,7 +50,7 @@ void world() {
 
     /* world thread waits until done == 1. */
     while(done == 0 || done == 2)//have another done state to worry about
-	pthread_cond_wait(&done_hello, &mutex);
+	    pthread_cond_wait(&done_hello, &mutex);
 
     printf("world ");
     fflush(stdout);
