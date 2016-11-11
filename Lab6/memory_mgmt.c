@@ -288,12 +288,15 @@ int PRAlgo_FIFO(const PageFrame * PageFrames, int num_frames, const int * PageAc
  *
  */
 int PRAlgo_LRU(const PageFrame * PageFrames, int num_frames, const int * PageAccesses, int num_accesses, int current_access){
-  int time = PageFrames[0].time_of_access;
+    //get the time of access
+  int timeAccess = PageFrames[0].time_of_access;
   int index = 0;
 
+    //look through frames for last access time
   for(int i = 1; i < num_frames; i++){
-    if(PageFrames[i].time_of_access < time){
-      time = PageFrames[i].time_of_access;
+      //if less than, then we have a new shorter
+    if(PageFrames[i].time_of_access < timeAccess){
+      timeAccess = PageFrames[i].time_of_access;
       index = i;
     }
   }
@@ -306,13 +309,13 @@ int PRAlgo_LRU(const PageFrame * PageFrames, int num_frames, const int * PageAcc
  */
 int PRAlgo_OPT(const PageFrame * PageFrames, int num_frames, const int * PageAccesses, int num_accesses, int current_access){
 
-    int most_future_access = current_access;
-    int index_with_most_future_access = 0;
-    int i, j;
+    int futureAccess = current_access;
+    int index = 0;
+    int j;
     int id, access;
 
     // Need to go through all current page frames
-    for (i = 0; i < num_frames; i++) {
+    for (int i = 0; i < num_frames; i++) {
         // Current access
         j = current_access;
         // The id we're checking
@@ -325,25 +328,24 @@ int PRAlgo_OPT(const PageFrame * PageFrames, int num_frames, const int * PageAcc
             access = PageAccesses[j];
         }
 
-        if (j > most_future_access) {
-            most_future_access = j;
-            index_with_most_future_access = i;
+        if (j > futureAccess) {
+            futureAccess = j;
+            index = i;
         }
     }
 
-    return index_with_most_future_access;
+    return index;
 
 }
 
-int PRAlgo_CUST(const PageFrame * PageFrames, int num_frames,
-                const int * PageAccesses, int num_accesses, int current_access) {
-    int most_future_access = current_access;
-    int index_with_most_future_access = 0;
-    int i, j, k;
+int PRAlgo_CUST(const PageFrame * PageFrames, int num_frames, const int * PageAccesses, int num_accesses, int current_access) {
+    int futureAccess = current_access;
+    int index = 0;
+    int j, k;
     int id, access;
 
     // Need to go through all current page frames
-    for (i = 0; i < num_frames; i++) {
+    for (int i = 0; i < num_frames; i++) {
         // Current access
         j = current_access;
         // The id we're checking
@@ -361,13 +363,13 @@ int PRAlgo_CUST(const PageFrame * PageFrames, int num_frames,
             }
         }
 
-        if (j > most_future_access) {
-            most_future_access = j;
-            index_with_most_future_access = i;
+        if (j > futureAccess) {
+            futureAccess = j;
+            index = i;
         }
     }
 
-    return index_with_most_future_access;
+    return index;
 
     //return (rand() % NUM_FRAMES) + 1;
 }
